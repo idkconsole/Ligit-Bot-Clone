@@ -1,0 +1,16 @@
+{
+    "bot-token": "enter bot token",
+    "user-token": "enter user token",
+    "slot-webhook": "slot webhook url",
+    "bl-webhook": "blacklist webhook url",
+    "role-webhook": "role webhook url",
+    "owners": [
+       1141031600449138750
+    ],
+    "role-access-category": 1142329140633157654,
+    "slot-access-category": 1142329955477364827,
+    "role-id": 1142329232807178351,
+    "vanity": "skids",
+    "slots-cate": 1142330003745419284,
+    "premium-users-role": 1142329307704852480
+}
