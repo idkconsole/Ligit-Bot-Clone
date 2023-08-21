@@ -303,14 +303,15 @@ Note: Ticket will self-destruct in fe seconds of inactivity.""")
                             time.sleep(5)
                             await channel.delete()
     elif channel.category_id == slot_access_category:
-        async for messages in channel.history(limit=100):
-            if messages.author.bot:
-                for member in messages.mentions:
+        async for message in channel.history(limit=100):
+            if message.author.bot:
+                for member in message.mentions:
                     mem = channel.guild.get_member(int(member.id))
-                    if int(mem.id) in blacklisted:
-                        await channel.send(f"[{now}] | {mem.mention} you're blacklisted, deleting channel.")
-                        await asyncio.sleep(5)
-                        await channel.delete()
+                    if mem is not None:
+                        if int(mem.id) in blacklisted:
+                            await channel.send(f"[{now}] | {mem.mention} you're blacklisted, deleting channel.")
+                            time.sleep(5)
+                            await channel.delete()
                     else:
                         await channel.send(f"[{now}]: Fetching slot....")
                         with open("slots.json", "r") as f:
