@@ -302,41 +302,34 @@ async def on_guild_channel_create(channel: discord.TextChannel):
 Note: Ticket will self-destruct in fe seconds of inactivity.""")
                             time.sleep(5)
                             await channel.delete()
-    elif channel.category_id == slot_access_category:   
-        time.sleep(1)
-        async for message in channel.history(limit=100):
-            if message.author.bot:
-                for member in message.mentions:
+    elif channel.category_id == slot_access_category:
+        async for messages in channel.history(limit=100):
+            if messages.author.bot:
+                for member in messages.mentions:
                     mem = channel.guild.get_member(int(member.id))
-                    if mem is not None:
-                        if int(mem.id) in blacklisted:
-                            await channel.send(f"[{now}] | {mem.mention} you're blacklisted, deleting channel.")
-                            time.sleep(5)
-                            await channel.delete()
+                    if int(mem.id) in blacklisted:
+                        await channel.send(f"[{now}] | {mem.mention} you're blacklisted, deleting channel.")
+                        await asyncio.sleep(5)
+                        await channel.delete()
+                    else:
+                        await channel.send(f"[{now}]: Fetching slot....")
+                        with open("slots.json", "r") as f:
+                            slot_data = json.load(f)
+                        role = channel.guild.get_role(premium_users_role)
+                        user_id = str(mem.id)
+                        if user_id in slot_data:
+                            slot_name = slot_data[user_id]
+                            existing_slot_channel = discord.utils.get(channel.guild.channels, name=slot_name)
+                            if existing_slot_channel:
+                                await existing_slot_channel.set_permissions(mem, read_messages=True, send_messages=True, mention_everyone=True)
+                            if role is not None and mem is not None:
+                                await channel.send(f"Added {role.mention} to {mem.mention}\nSuccessfully Assigned {mem.mention} to {existing_slot_channel.mention}.")
+                                await mem.add_roles(role)
+                                embed = discord.Embed(description=f"Added {role.mention} to {mem.mention}\nSuccessfully Added {mem.mention} to slot.")
+                                await existing_slot_channel.send(embed=embed)
+                            else:
+                                await channel.send(f"No slots found.")
                         else:
-                            try:
-                                await channel.send(f"[{now}] Fetching slot....")
-                                user_id = str(mem.id)
-                                with open("slots.json", "r") as f:
-                                    slot_data = json.load(f)                                
-                                if user_id in slot_data:
-                                    slot_name = slot_data[user_id]
-                                    existing_slot_channel = discord.utils.get(channel.guild.channels, name=slot_name)
-                                    if existing_slot_channel:
-                                        await existing_slot_channel.set_permissions(mem, read_messages=True, send_messages=True, mention_everyone=True)
-                                        role = discord.utils.get(channel.guild.roles, id=premium_users_role)
-                                        if role:
-                                            await channel.send(f"Added {role.mention} to {mem.mention}\nSuccessfully Assigned {mem.mention} to {existing_slot_channel.mention}")
-                                            await mem.add_roles(role)
-                                            embed = discord.Embed(description=f"Added {role.mention} to {mem.mention}\nSuccessfully Added {mem.mention} to slot")
-                                            await existing_slot_channel.send(embed=embed)
-                                        else:
-                                            await channel.send(f"No premium role found")
-                                    else:
-                                        await channel.send(f"Slot not found")
-                                else:
-                                    await channel.send(f"No slots found for {mem.mention}")
-                            except Exception as e:
-                                print(f"An error occurred in the slot access section: {e}")
+                            await channel.send(f"No slots found for {mem.mention}.")
 
 client.run(token, reconnect=True)
